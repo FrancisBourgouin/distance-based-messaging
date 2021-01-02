@@ -58,8 +58,16 @@ Since FoV is like an isosceles triangle, we can split it in two rectangle triang
 
 We can calculate the height of our isoceles triangle by using the tangeant.
 
+## Questions
+
+### Why use face-landmarks instead of blazeface ?
+
+Blazeface is faster, however the coordinates are in two dimensions, so the distance between the two eyes can come close to zero if the head is angled instead of looking staright in the camera.
+
 # Sources
 
 - https://www.pointsinfocus.com/tools/depth-of-field-and-equivalent-lens-calculator
 - https://en.wikipedia.org/wiki/Pupillary_distance
 - https://www.engineeringtoolbox.com/distance-relationship-between-two-points-d_1854.html
+- https://github.com/tensorflow/tfjs-models/tree/master/blazeface
+- https://github.com/tensorflow/tfjs-models/tree/master/face-landmarks-detection
