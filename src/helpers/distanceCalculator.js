@@ -20,7 +20,3 @@ export const calculateDistance = (focalLength, imgWidth, ipd) => {
   return height
 }
 
-console.log(convertRadToDeg(calculateFoVAngle(22)))
-console.log(calculateDistance(22, 1920, 100))
-console.log(calculateDistance(22, 1920, 500))
-console.log(calculateDistance(22, 1920, 1000))
