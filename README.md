@@ -46,7 +46,7 @@ That will be our baseline to calculate the distance of an user.
 
 Since we want to avoid problems with 2d coordinates, we are using a model that gives us 3d coordinates for each iris. 
 
-![distance between two 3d points](./README_IMG/distancecalculator.png)
+![distance between two 3d points](./README_IMG/3dpoints.png)
 
 This is how we will calculate the distance between our two points.
 
