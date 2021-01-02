@@ -1,70 +1,52 @@
-# Getting Started with Create React App
+# Distance based messaging
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a proof of concept / small fun test using Machine Learning (Tensorflow.js) and the Blazeface and FaceLandmarks models.
 
-## Available Scripts
+The goal is to show a different message at a different size in the browser window.
 
-In the project directory, you can run:
+Instead of using proximity sensors, we can use an average interpupillary distance and the field of view of the webcam and some geometry to calculate the approximate distance of a user from the webcam.
 
-### `yarn start`
+This project is mostly maths & geometry, but using a machine learning model to recognize a face and find the positions of the eyes was crucial for this project.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Example of the finished project
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+![Demo of the project](./README_IMG/distance-based-message-small.gif)
+## Thought process
 
-### `yarn test`
+Those are the steps that were taken, from drawing the problem to calculations.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Calculations
 
-### `yarn build`
+### FoV (Field of view)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+On my current setup, I'm using a micro 4/3 camera with a lens at 22mm. That means an horizontal angle of view of 42.9°.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Average interpupillary distance
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+On average, adults have an IPD of 63mm. That will be our baseline to calculate the distance of an user.
 
-### `yarn eject`
+### Distance between two 3d points
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Since the initial test had problems with 2d coordinates, we are using a model that gives us 3d coordinates for each iris. This is how we calculate the distance between two points.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+distance = sqrt((x2 - x1)^2 + (y2 - y1)^2 + (z2 - z1)^2)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Geometry
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Since FoV is like an isosceles triangle, the other two angles are 68.55°.
 
-## Learn More
+The main height of a isosceles triangle is calculated like so : height = sqrt(a^2 - (b/2)^2)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+In our case, we don't have all the sides, so splitting the triangle in two rectangle triangles is our way
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Angles are 90 / 21.45 / 68.55
 
-### Code Splitting
+We know the height of one side is possible to calculate based on the ratio of IPD to width, then divided by two.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+We can calculate the height of our isoceles triangle by calculating : tan(68.5) = height / calculatedIPDratioedetc
 
-### Analyzing the Bundle Size
+# Sources
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- https://www.pointsinfocus.com/tools/depth-of-field-and-equivalent-lens-calculator
+- https://en.wikipedia.org/wiki/Pupillary_distance
+- https://www.engineeringtoolbox.com/distance-relationship-between-two-points-d_1854.html
