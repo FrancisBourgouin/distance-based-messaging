@@ -1,117 +1,66 @@
-import { useEffect, useState, useRef } from 'react'
-
-import * as tfjs from '@tensorflow/tfjs-core'
-// import '@tensorflow/tfjs-backend-wasm'
-// import '@tensorflow/tfjs-backend-cpu'
-import '@tensorflow/tfjs-backend-webgl'
-// import * as blazeface from '@tensorflow-models/blazeface'
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection'
-import { calculateDistance } from './helpers/distanceCalculator'
-
+import { useEffect, useState } from 'react'
 import './App.css';
+import FaceLandmarks from './FaceLandmarks';
 
 
 
 function App() {
-  const close = useRef(null)
-  const far = useRef(null)
-  const videoFeed = useRef(null)
-  const [model, setModel] = useState(null)
-  const [mode, setMode] = useState('')
-  const [distance, setDistance] = useState(null)
-  const [fontSize, setFontSize] = useState('1em')
-  const [scanning, setScanning] = useState(null)
+  const [mode, setMode] = useState("initial")
+  const [setupValues, setSetupValues] = useState({
+    close: 1000,
+    far: 1300,
+    fov: 0,
+    stop: true
+  })
 
-
-  const prep = async () => {
-    await tfjs.ready()
-    const modelLoad = await faceLandmarksDetection.load(
-      faceLandmarksDetection.SupportedPackages.mediapipeFacemesh);
-    setModel(modelLoad)
-    setMode('ready')
-  }
-  const detect = async (imgRef) => {
-    // // Load the model.
-    // await tfjs.ready()
-    // const model = await blazeface.load();
-    // Pass in an image or video to the model. The model returns an array of
-    // bounding boxes, probabilities, and landmarks, one for each detected face.
-
-    const returnTensors = false; // Pass in `true` to get tensors back, rather than values.
-    const predictions = await model.estimateFaces({
-      input: imgRef
-    });
-
-    if (predictions.length > 0 && predictions[0].faceInViewConfidence > 0.89) {
-      const left = predictions[0].annotations.leftEyeIris[0]
-      const right = predictions[0].annotations.rightEyeIris[0]
-
-      const distancePX = ((right[0] - left[0]) ** 2 + (right[1] - left[1]) ** 2 + (right[2] - left[2]) ** 2) ** (1 / 2)
-      const ratio = 1920 / 400
-      const calculatedIPD = Math.abs(distancePX) / 1920 * 400
-      const distance = calculateDistance(22, 400, calculatedIPD)
-      console.log(predictions[0], distance)
-      setDistance(distance)
+  const setValue = (event) => {
+    if (event.target.name === 'stop') {
+      setSetupValues(prev => ({ ...prev, [event.target.name]: event.target.checked }))
     } else {
-      setDistance(null)
+      setSetupValues(prev => ({ ...prev, [event.target.name]: Number(event.target.value) }))
     }
-    // requestAnimationFrame(() => detect(imgRef))
   }
 
-  useEffect(() => {
-    prep()
-  }, [])
-
-  useEffect(() => {
-    if (!videoFeed) {
-      return
-    }
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        let video = videoFeed.current
-        video.srcObject = stream
-        video.play()
-      })
-  }, [videoFeed])
-
-  useEffect(() => {
-    if (mode === 'ready') {
-      // detect(videoFeed.current)
-      setScanning(setInterval(() => detect(videoFeed.current), 1000))
-    }
-    if (mode === 'veryclose') {
-      clearInterval(scanning)
-      console.log('stopped')
-    }
-  }, [mode])
-
-  useEffect(() => {
-    if (distance === null) {
-      // setMode("nobody")
-      return
-    }
-    else if (distance < 1000) {
-      setMode("veryclose")
-      setFontSize(`${1}em`)
-    }
-    else if (distance > 1000 && distance < 1300) {
-      setMode("close")
-      setFontSize(`${3}em`)
-    }
-    else if (distance > 1300) {
-      setMode("far")
-      setFontSize(`${5}em`)
-    }
-  }, [distance])
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    setMode("active")
+  }
 
   return (
     <div className="App">
-      {/* <h1>Distance!</h1> */}
-      {(mode === 'ready' || mode === 'nobody') && <h1>Ready!</h1>}
-      {mode === 'veryclose' && <h1 style={{ fontSize }}>You're a pretty cool person!</h1>}
-      {mode === 'close' && <h1 style={{ fontSize }}>Come closer!</h1>}
-      {mode === 'far' && <h1 style={{ fontSize }}>Come here!</h1>}
-      <video style={{ visibility: 'visible', position: 'absolute', left: 0, top: 0 }} width="400px" ref={videoFeed} autoPlay={true} muted={true}></video>
+      {mode === "initial" &&
+        <form onSubmit={handleSubmit}>
+          <section>
+            <h1>Distance triggers (in mm)</h1>
+            <p>
+              <span>very close {"<"} </span>
+              <input type="number" name="close" onChange={setValue} value={setupValues.close} />
+              <span> {"<"} close {"<"} </span>
+              <input type="number" name="far" onChange={setValue} value={setupValues.far} />
+              <span> {"<"} far</span>
+            </p>
+          </section>
+          <section>
+            <h1>Field of view (in °)</h1>
+            <p>0 to use the default (42.8°) (22mm lens on m4/3 body)</p>
+            <p>90° for wide-angle (like Pixel 4)</p>
+            <p>78° for 'standard' wide-angle (like Logitech C920)</p>
+            <p>45° for square-ish webcams (like MacBooks)</p>
+            <p>
+              <input type="number" name="fov" onChange={setValue} value={setupValues.fov} />
+            </p>
+          </section>
+          <section>
+            <h1>Stop when at very close range</h1>
+            <p>
+              <input type="checkbox" name="stop" onChange={setValue} checked={setupValues.stop} />
+            </p>
+          </section>
+
+          <button type="submit">Start demo</button>
+        </form>
+      }
+      {mode === "active" && <FaceLandmarks {...{ close: setupValues.close, far: setupValues.far, fov: setupValues.fov, autoStop: setupValues.stop }} />}
     </div>
   );
 }

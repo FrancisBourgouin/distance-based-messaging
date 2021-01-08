@@ -10,8 +10,9 @@ const calculateBaseSize = (imgWidth, ipd) => imgWidth / ipd * IPDMEAN
 
 const calculateBaseAngles = fov => (180 - 90 - fov / 2)
 
-export const calculateDistance = (focalLength, imgWidth, ipd) => {
-  const fov = convertRadToDeg(calculateFoVAngle(focalLength))
+export const calculateDistance = (focalLength, imgWidth, ipd, givenFov) => {
+
+  const fov = givenFov ? givenFov : convertRadToDeg(calculateFoVAngle(focalLength))
   const baseAngle = convertDegToRad(calculateBaseAngles(fov))
   const baseSize = calculateBaseSize(imgWidth, ipd)
 

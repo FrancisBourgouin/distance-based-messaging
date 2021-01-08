@@ -3,7 +3,7 @@ img{
   width:700px;
   height:auto;
 }
-.App{
+.FaceLandmarks{
   height:100vh;
   width:100vw;
   display:flex;
@@ -11,7 +11,11 @@ img{
   align-items: center;
   font-size:40px;
 }
-h1{
+
+*{
 text-align: center;
-transition: all 500ms ease-in-out;
+}
+
+span{
+  font-weight: 700;
 }
